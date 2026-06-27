@@ -12,8 +12,8 @@ def train():
     criterion = nn.CrossEntropyLoss() # Функция потерь для многоклассовой классификации
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-    # epochs = 10
-    epochs = 3
+    epochs = 10
+    # epochs = 3
     for epoch in range(epochs):
         model.train()
         running_loss = 0 # Счетчик для накопления потерь за эпоху
