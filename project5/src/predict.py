@@ -1,9 +1,5 @@
 import torch
-from PIL import Image
 from torchvision.models import resnet18
-
-from torchvision import datasets
-import torchvision.transforms.v2 as transforms
 
 from dataset import get_dataloaders
 
@@ -16,14 +12,12 @@ model.to(device)
 model.eval()
 
 def predict(dataset, index):
-
     image, label = dataset[index]
-
     image = image.unsqueeze(0)
 
     with torch.no_grad():
         output = model(image)
-        predicted = torch.argmax(output, dim=1).item() # item() для индекса класса с наибольшей вероятностью
+        predicted = torch.argmax(output, dim=1).item()
 
     class_names = dataset.classes
 
@@ -33,7 +27,7 @@ def predict(dataset, index):
 if __name__ == "__main__":
     test_loader = get_dataloaders(batch_size=1, is_train=False)
     
-    prediction, true_label = predict(test_loader.dataset, index=3)
+    prediction, true_label = predict(test_loader.dataset, index=3) # test_loader.dataset
 
     print(f"True label: {true_label}")
     print(f"Prediction: {prediction}")

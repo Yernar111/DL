@@ -1,5 +1,4 @@
 import torch
-from torchvision import transforms
 from torchvision.transforms import v2
 from PIL import Image
 
@@ -27,7 +26,7 @@ def predict(image_path, card_classes):
 
     with torch.no_grad():
         output = model(image)
-        _, predicted = torch.max(output.data, 1)
+        predicted = torch.argmax(output, dim=1)
         idx = predicted.item()
 
     return card_classes[idx]
@@ -37,4 +36,4 @@ if __name__ == "__main__":
     image_path = "data/check/image1.png"
     card_classes = get_dataloaders(batch_size=1, is_train=False).dataset.classes
     prediction = predict(image_path, card_classes)
-    print(f"Predicted digit: {prediction}")
+    print(f"Predicted: {prediction}")

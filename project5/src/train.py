@@ -13,7 +13,7 @@ def train():
     print(f"Using device: {device}")
     train_loader, val_loader = get_dataloaders()
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.fc.parameters(), lr=0.001) # Обучаем только последний слой модели
+    optimizer = optim.Adam(model.fc.parameters(), lr=0.001) # Оптимизатор обновляет только последний слой model.fc.parameters()
 
     loss_train = []
     loss_val = []
@@ -26,6 +26,8 @@ def train():
         model.train()
         running_loss = 0
         for images, labels in train_loader:
+            images = images.to(device)
+            labels = labels.to(device)
             outputs = model(images)
             loss = criterion(outputs, labels)
             optimizer.zero_grad()
@@ -47,6 +49,8 @@ def train():
         val_loss = 0
         with torch.no_grad():
             for images, labels in val_loader:
+                images = images.to(device)
+                labels = labels.to(device)
                 outputs = model(images)
                 loss = criterion(outputs, labels)
                 val_loss += loss.item()
