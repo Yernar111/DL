@@ -9,13 +9,11 @@ model.load_state_dict(torch.load("models/mnist_model.pth"))
 model.eval()
 
 def predict(image_path):
-    image = Image.open(image_path).convert("L") # Открываем изображение и конвертируем в градации серого
-    transform = transforms.Compose([ # Определяем последовательность преобразований
-        transforms.Resize((28, 28)), # Изменяем размер изображения до 28x28 пикселей
-        transforms.ToTensor(), # Преобразуем изображение в тензор
-        # transforms.Normalize((0.5,), (0.5,)) # Нормализуем тензор изображения, чтобы значения пикселей находились в диапазоне [-1, 1]
+    image = Image.open(image_path).convert("L")
+    transform = transforms.Compose([
+        transforms.Resize((28, 28)),
+        transforms.ToTensor(),
     ])
-    # image = transform(image).unsqueeze(0)
     image = transform(image)
     image = image.view(1, 28 * 28)
 
