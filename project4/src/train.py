@@ -52,7 +52,7 @@ def train():
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             patience_counter = 0
-            torch.save(model.state_dict(), "models/best_mnist_model.pth") # Сохраняем лучшую версию весов на диск
+            torch.save(model.state_dict(), "models/best_model.pth") # Сохраняем лучшую версию весов на диск
         else:
             patience_counter += 1
             print(f"-> Validation Loss не улучшился. Ожидание: {patience_counter}/{patience}")

@@ -6,7 +6,7 @@ from PIL import Image
 from model import SimpleCNN
 
 model = SimpleCNN()
-model.load_state_dict(torch.load("models/best_mnist_model.pth"))
+model.load_state_dict(torch.load("models/best_model.pth"))
 model.eval()
 
 def predict(image_path):
@@ -21,7 +21,7 @@ def predict(image_path):
 
     with torch.no_grad():
         output = model(image)
-        _, predicted = torch.max(output.data, 1)
+        predicted = torch.argmax(output, dim=1)
 
     return predicted.item()
 
@@ -29,4 +29,4 @@ def predict(image_path):
 if __name__ == "__main__":
     image_path = "dataset/check/Y71.jpg"
     prediction = predict(image_path)
-    print(f"Predicted digit: {prediction}")
+    print(f"Predicted: {prediction}")

@@ -11,13 +11,12 @@ def get_dataloaders(batch_size=64, is_train=True):
         v2.Resize((224,224)),
         v2.ToImage(),
         v2.ToDtype(torch.float32, scale=True),
-        v2.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+        v2.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]) # Для каждого из трех каналов RGB установить значение
     ])
     dataset = datasets.ImageFolder(
         root="dataset/train_test",
         transform=transform
     )
-    # print(dataset.class_to_idx)
 
     train_size = int(0.6 * len(dataset))
     val_size = int(0.2 * len(dataset))
