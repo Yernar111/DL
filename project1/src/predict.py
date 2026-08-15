@@ -13,9 +13,9 @@ def predict(dataset, index):
     model.load_state_dict(torch.load("models/mnist_model.pth")) # Загружаем сохраненные веса модели
     model.eval()
 
-    image, label = dataset[index]
+    image, label = dataset[index] # dataset[index] возвращает кортеж (изображение, метка) для указанного индекса. image - это тензор размера (1, 28, 28), а label - это целое число от 0 до 9, представляющее правильную метку для этого изображения.
 
-    # Преобразуем форму:
+    # Преобразуем форму, так как модель ожидает входной тензор размером (batch_size, input_dim)
     # [1, 28, 28] -> [1, 784]
     image = image.view(1, 28 * 28)
 

@@ -3,12 +3,12 @@ from torchvision.transforms import ToTensor
 
 import torch.utils.data as data
 
-def get_dataloaders(batch_size=64):
-    train_dataset = datasets.MNIST( # метод для загрузки датасета
-        root="dataset",
+def get_dataloaders(batch_size=64): 
+    train_dataset = datasets.MNIST( # метод для загрузки датасета. Изображения и метки загружаются в виде кортежей (image, label).
+        root="dataset", # путь к папке, где будут храниться данные. Если папка не существует, она будет создана.
         train=True,
         download=True,
-        transform=ToTensor() # преобразуем изображения в тензоры размера (1, 28, 28) где 1 - количество каналов (черно-белое изображение), 28x28 - размер изображения
+        transform=ToTensor() # преобразуем изображения в тензоры размера (1, 28, 28) где 1 - количество каналов (черно-белое изображение), 28x28 - размер изображения.
     )
 
     # test_dataset = datasets.MNIST(
