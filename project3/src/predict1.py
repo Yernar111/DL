@@ -5,8 +5,6 @@ from PIL import Image
 
 from model import SimpleCNN
 
-# import Grayscale
-
 model = SimpleCNN()
 model.load_state_dict(torch.load("models/best_mnist_model.pth"))
 model.eval()
