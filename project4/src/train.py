@@ -5,7 +5,11 @@ import torch.optim as optim
 from dataset import get_dataloaders
 from model import SimpleCNN
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
+
+import os
+import json
+from tqdm import tqdm
 
 def train():
     train_loader, val_loader = get_dataloaders()
@@ -21,9 +25,11 @@ def train():
     patience = 3
     patience_counter = 0
     for epoch in range(epochs):
+        print(f"Epoch [{epoch+1}/{epochs}]")
         model.train()
         running_loss = 0
-        for images, labels in train_loader: # images имеют размерность (batch_size, 1, 28, 28)
+        train_tqdm = tqdm(train_loader, leave=True)
+        for images, labels in train_tqdm: # images имеют размерность (batch_size, 1, 28, 28)
             outputs = model(images)
             loss = criterion(outputs, labels)
             optimizer.zero_grad()
@@ -31,11 +37,9 @@ def train():
             optimizer.step()
 
             running_loss += loss.item() # loss.item() возвращает скалярное значение потерь для текущего батча, которое мы добавляем к running_loss для накопления общей потери за эпоху
+            train_tqdm.set_description(f"Current loss={loss.item():.3f}")
 
-        print(
-            f"Epoch {epoch+1}/{epochs}, "
-            f"Loss: {running_loss:.4f}"
-        )
+        print(f"Mean loss: {running_loss / len(train_loader):.4f}")
 
         model.eval()
         val_loss = 0
@@ -44,7 +48,7 @@ def train():
                 outputs = model(images)
                 loss = criterion(outputs, labels)
                 val_loss += loss.item()
-        print(f"Validation Loss: {val_loss:.4f}")
+        print(f"Mean validation loss: {val_loss / len(val_loader):.4f}")
 
         loss_train.append(running_loss/len(train_loader))
         loss_val.append(val_loss/len(val_loader))
@@ -63,15 +67,9 @@ def train():
 
     print("Model saved")
 
-    torch.save(
-        loss_train, # Сохраняем список потерь за эпохи в файл. Это может быть полезно для анализа процесса обучения модели.
-        "models/loss1.pth" # Путь для сохранения списка потерь
-    )
-
-    torch.save(
-        loss_val, # Сохраняем список потерь на валидации за эпохи в файл. Это может быть полезно для анализа процесса обучения модели.
-        "models/loss_val1.pth" # Путь для сохранения списка потерь на валидации
-    )
+    history = {"train_loss": loss_train, "val_loss": loss_val}
+    with open(os.path.join("models", "loss_history.json"), "w") as f:
+        json.dump(history, f, indent=2)
 
     plt.plot(loss_train, label="Training Loss")
     plt.plot(loss_val, label="Validation Loss")

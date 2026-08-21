@@ -27,6 +27,6 @@ def predict(image_path):
 
 
 if __name__ == "__main__":
-    image_path = "dataset/check/Y71.jpg"
+    image_path = "data1/Y71.jpg"
     prediction = predict(image_path)
     print(f"Predicted: {prediction}")
