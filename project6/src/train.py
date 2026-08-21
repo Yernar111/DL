@@ -7,6 +7,41 @@ from model import model
 
 import matplotlib.pyplot as plt
 
+import os
+import json
+
+from torchmetrics.classification import MulticlassAccuracy, MulticlassF1Score
+
+def run_epoch(model, loader, criterion, device, optimizer=None, acc_metric=None, f1_metric=None):
+    is_train = optimizer is not None
+    model.train() if is_train else model.eval()
+
+    total_loss = 0.0
+    with torch.set_grad_enabled(is_train):
+        for images, labels in loader:
+            images = images.to(device)
+            labels = labels.to(device)
+
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+            if is_train:
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+            else:
+                acc_metric.update(outputs, labels)
+                f1_metric.update(outputs, labels)
+
+            total_loss += loss.item()
+
+    if is_train:
+        return total_loss / len(loader)
+    else:
+        val_acc = acc_metric.compute().item()
+        val_f1 = f1_metric.compute().item()
+        return total_loss / len(loader), val_acc, val_f1
+
 def train():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
@@ -15,55 +50,43 @@ def train():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.fc.parameters(), lr=0.001, weight_decay=1e-3)
 
+    acc_metric = MulticlassAccuracy(num_classes=100).to(device)
+    f1_metric = MulticlassF1Score(num_classes=100, average='macro').to(device)
+
     loss_train = []
     loss_val = []
+
+    acc_val = []
+    f1_val = []
     
-    epochs = 15
+    epochs = 20
     best_val_loss = float('inf')
     patience = 3
     patience_counter = 0
     for epoch in range(epochs):
-        model.train()
-        running_loss = 0
-        for images, labels in train_loader:
-            images = images.to(device)
-            labels = labels.to(device)
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        print(f"Epoch [{epoch+1}/{epochs}]")
+        train_loss = run_epoch(model, train_loader, criterion, device, optimizer)
+        val_loss, val_acc, val_f1 = run_epoch(model, val_loader, criterion, device, optimizer=None, acc_metric=acc_metric, f1_metric=f1_metric)
 
-            running_loss += loss.item()
+        print(f"Mean loss: {train_loss:.4f}")
 
-        print(
-            f"Epoch {epoch+1}/{epochs}, "
-            f"Loss: {running_loss:.4f}"
-        )
+        print(f"Mean validation loss: {val_loss:.4f}")
 
-        epoch_loss = running_loss / len(train_loader)
+        loss_train.append(train_loss)
+        loss_val.append(val_loss)
 
-        loss_train.append(epoch_loss)
+        acc_val.append(val_acc)
+        f1_val.append(val_f1)
 
-        model.eval()
-        val_loss = 0
-        with torch.no_grad():
-            for images, labels in val_loader:
-                images = images.to(device)
-                labels = labels.to(device)
-                outputs = model(images)
-                loss = criterion(outputs, labels)
-                val_loss += loss.item()
-        print(f"Validation Loss: {val_loss:.4f}")
+        print(f"Эпоха завершена | Accuracy: {val_acc:.4f} | F1-Score: {val_f1:.4f}")
+        acc_metric.reset()
+        f1_metric.reset()
 
-        epoch_val_loss = val_loss / len(val_loader)
-
-        loss_val.append(epoch_val_loss)
-
-        if epoch_val_loss < best_val_loss:
+        if val_loss < best_val_loss:
             best_val_loss = val_loss
             patience_counter = 0
             torch.save(model.state_dict(), "models/best_model.pth")
+            print("New best model saved")
         else:
             patience_counter += 1
             print(f"-> Validation Loss не улучшился. Ожидание: {patience_counter}/{patience}")
@@ -72,17 +95,13 @@ def train():
                 print(f" Early Stopping! Обучение остановлено на эпохе {epoch+1}.")
                 break
 
-    print("Model saved")
+    loss_history = {"train_loss": loss_train, "val_loss": loss_val}
+    with open(os.path.join("models", "loss_history.json"), "w") as f:
+        json.dump(loss_history, f, indent=2)
 
-    torch.save(
-        loss_train,
-        "models/loss1.pth"
-    )
-
-    torch.save(
-        loss_val,
-        "models/loss_val1.pth"
-    )
+    metrics_history = {"val_accuracy": acc_val, "val_f1": f1_val}
+    with open(os.path.join("models", "metrics_history.json"), "w") as f:
+        json.dump(metrics_history, f, indent=2)
 
     plt.plot(loss_train, label="Training Loss")
     plt.plot(loss_val, label="Validation Loss")

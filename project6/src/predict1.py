@@ -44,7 +44,7 @@ def predict(image_path, classes):
 
 
 if __name__ == "__main__":
-    image_path = "../data1/image1.png"
+    image_path = "data1/image2.png"
     classes = get_dataloaders(batch_size=1, is_train=False).dataset.classes
     prediction, probability = predict(image_path, classes)
     # print(f"Predicted: {prediction}")
