@@ -8,4 +8,10 @@ model = resnet18(weights=ResNet18_Weights.DEFAULT) # Веса модели ResNe
 for param in model.parameters():
     param.requires_grad = False # Замораживаем все слои(веса) модели. Это значит, что во время обучения веса этих слоев не будут обновляться. Мы будем обучать только последний слой модели
 
+for param in model.layer4.parameters():
+    param.requires_grad = True
+
+for param in model.fc.parameters():
+    param.requires_grad = True
+
 model.fc = nn.Linear(model.fc.in_features, 53) # В ResNet последний слой называется fc (fully connected layer) и содержит 512 нейронов. Заменяем последний слой на новый с 53 выходами (для каждого класса)
